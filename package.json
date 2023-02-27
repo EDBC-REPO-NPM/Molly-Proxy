@@ -1,0 +1,17 @@
+{
+  "repository": "https://github.com/EDBC-REPO-NPM/molly-file",
+  "keywords": [ "molly-js", "file db", "molly-file"],
+  "description": "simple file db for nodejs",
+  "author": "becerraEnamneul",
+  "name": "molly-proxy",
+  "version": "1.0.0",
+  "main": "main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node main",
+    "test": "node test"
+  },
+  "dependencies": {
+    "molly-fetch": "^1.1.2"
+  }
+}
