@@ -133,7 +133,11 @@ function sendStaticFile( req,res,url,status ){
 function sendStreamFile( req,res,url,status ){
 	try { 
 
-		url.headers = !url.headers ? req.headers : 
+		const ip = req.headers['x-forwarded-for'] ||
+				   req.socket.remoteAddress || 
+				   null;
+
+		url.headers = !url.header ? req.headers : 
 									url.headers;
 		url.method = !url.method ? req.method : 
 								   url.method;
@@ -141,6 +145,8 @@ function sendStreamFile( req,res,url,status ){
 		url.decode = false;
 		url.body = req;
 		
+		url.headers['x-forwarded-for'] = ip;
+
 		return fetch(url).then((rej)=>{
 			res.writeHeader( rej.status, rej.headers );
 			rej.data.pipe( res );
