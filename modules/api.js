@@ -75,7 +75,7 @@ const mime = {
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────── //
 
-function setmimetype( _path ){
+function setMimetype( _path ){
 	if( !(/\.\w+$/).test(_path) ) return 'text/html';
 	const keys = Object.keys(mime)
 	for( let key of keys ){ if( _path.endsWith(key) ) 
@@ -95,6 +95,14 @@ function parseParameters( ...arg ){
 	}	return obj;
 }
 
+function getInterval( range,chunkSize,size ){
+	const interval = range.match(/\d+/gi);
+	const start = Math.floor(+interval[0]/chunkSize)*chunkSize; 
+	const end = !interval[1] ? Math.min(chunkSize+start,size-1) : 
+				+interval[1]; 
+	return { start, end };
+}
+
 function parseData( data ){
 	if( typeof data === 'object' )
 		 return JSON.stringify(data);
@@ -106,18 +114,14 @@ function parseData( data ){
 function sendStaticFile( req,res,url,status ){
 	try{
 
+		const chunkSize = +req.headers['chunk-size'] || 
+						  Math.pow(10,6) * 10;
 		const size = fs.statSync( url ).size;
-        const mimetype = setmimetype( url );
+        const mimetype = setMimetype( url );
 		const range = req.headers.range;
 
 		if( range ) {
-			const interval = range.match(/\d+/gi);
-			const chuckSize = Math.pow( 10,6 )*10;
-
-			let start = +interval[0]; 
-			let end = interval[1] ? +interval[1]:
-				Math.min(chuckSize+start,size-1);
-
+			const {start,end} = getInterval( range, chunkSize, size );
 			const headers = header.stream(mimetype,start,end,size);
 			const data = fs.createReadStream( url,{start,end} );
 			encoder( 206, data, req, res, headers ); return 0;
@@ -125,6 +129,7 @@ function sendStaticFile( req,res,url,status ){
 			res.writeHead( status, header.static(mimetype,true) );
 			const str = fs.createReadStream(url); str.pipe(res);
 		}
+		
 	} catch(e) { output.send(req,res,e,404); }
 } 
 
@@ -133,27 +138,34 @@ function sendStaticFile( req,res,url,status ){
 function sendStreamFile( req,res,url,status ){
 	try { 
 
-		const ip = req.headers['x-forwarded-for'] ||
-				   req.socket.remoteAddress || 
-				   null;
-
-		url.headers = !url.header ? req.headers : 
-									url.headers;
-		url.method = !url.method ? req.method : 
-								   url.method;
-		url.responseType = 'stream';
-		url.decode = false;
-		url.body = req;
+		url.headers = !url.header ? req.headers : url.headers;
 		
-		url.headers['x-forwarded-for'] = ip;
+		url.headers['x-forwarded-proto'] = req.headers['x-forwarded-proto'] ||
+										   req.protocol || null;
+
+		url.headers['x-forwarded-host'] = req.headers['x-forwarded-host'] ||
+										  req.headers['host'] || null;
+
+		url.headers['x-forwarded-for'] = req.headers['x-forwarded-for'] ||
+										 req.socket.remoteAddress || null;
+
+		url.chunkSize = +req.headers['chunk-size'] || Math.pow(10,6)*10;
+		url.responseType = 'stream'; url.decode = false;
+		url.method = !url.method ? 'GET' : url.method;
+		url.body = req;
 
 		return fetch(url).then((rej)=>{
 			res.writeHeader( rej.status, rej.headers );
 			rej.data.pipe( res );
 		}).catch((rej)=>{ 
-			if( url.headers.range ) rej.status = 100;
-			res.writeHeader( rej.status, rej.headers );
-			rej.data.pipe( res );
+			try {
+				if( url.headers.range ) rej.status = 100;
+				res.writeHeader( rej.status, rej.headers );
+				rej.data.pipe( res );
+			} catch(e) {
+				res.writeHeader( 404, {'content-type':'text/plain'} );
+				res.end(e.message);
+			}
 		});
 
 	} catch(e) { output.send(req,res,e.message,404); }

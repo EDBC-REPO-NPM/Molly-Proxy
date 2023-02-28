@@ -10,13 +10,12 @@ function expirationAge(){
 }
 
 output.header = ( headers,cache,size )=>{
-	const age = expirationAge();
 
 	if( cache ) 
-		headers["Cache-Control"] = `public, max-age=${age}`;
-		headers["Set-Cookie"] = 'cross-site-cookie=whatever; SameSite=None; Secure';
+		headers["cache-control"] = `public, max-age=${expirationAge()}`;
+		headers["set-cookie"] = 'cross-site-cookie=whatever; SameSite=None; Secure';
 
-	if( size!=0 ) headers["Content-Length"] = size;
+	if( size!=0 ) headers["content-length"] = size;
 		headers["powered-by"] = "molly-proxy";
 		headers["x-xss-protection"] = 0;
 	
@@ -24,14 +23,14 @@ output.header = ( headers,cache,size )=>{
 }
 	
 output.static = function( mimeType,cache ){
-	const headers = { "Content-Type":mimeType }; 
+	const headers = { "content-type":mimeType }; 
 	return output.header( headers,cache,0 );
 }
 
 output.stream = function( mimeType,start,end,size ){
 	const length = end-start+1; const headers = {
-		"Content-Range":`bytes ${start}-${end}/${size}`,
-		"Accept-Ranges":"bytes", "Content-Type": mimeType,
+		"content-range":`bytes ${start}-${end}/${size}`,
+		"accept-ranges":"bytes", "content-type": mimeType,
 	};	return output.header( headers,true,length );
 }
 

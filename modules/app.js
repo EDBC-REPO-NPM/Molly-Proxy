@@ -22,7 +22,7 @@ function parser(req,arg){
 /*--─────────────────────────────────────────────────────────────────────────────────────--*/
 
 module.exports = function(req,res,config,protocol){
-    try {
+    try { req.protocol = protocol;
 
         if( !config.location ) return api.send( req,res,'Not Location List Found',404 );
 

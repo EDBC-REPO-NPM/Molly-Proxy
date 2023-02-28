@@ -9,21 +9,20 @@ module.exports = (status,raw,req,res,headers)=>{
     try{
 
         const encoder = req.headers['accept-encoding'];
-        const data = stream.Readable.from(raw);
-        let lib;
+        const data = stream.Readable.from(raw);let lib;
     
         if (/\bbr\b/.test(encoder)) {
             lib = 'createBrotliCompress';
-            headers["Content-Encoding"] = 'br'; 
-            headers["Vary"] = "Accept-Encoding";
+            headers["content-encoding"] = 'br'; 
+            headers["vary"] = "Accept-Encoding";
         } else if (/\bgzip\b/.test(encoder)) {
             lib = 'createGzip';
-            headers["Vary"] = "Accept-Encoding";
-            headers["Content-Encoding"] = 'gzip'; 
+            headers["vary"] = "Accept-Encoding";
+            headers["content-encoding"] = 'gzip'; 
         } else if ((/\bdeflate\b/).test(encoder)) {
             lib = 'createDeflate';
-            headers["Vary"] = "Accept-Encoding";
-            headers["Content-Encoding"] = 'deflate';
+            headers["vary"] = "Accept-Encoding";
+            headers["content-encoding"] = 'deflate';
         }
         
         res.writeHead( status, headers );
