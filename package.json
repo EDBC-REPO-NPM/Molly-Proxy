@@ -4,7 +4,7 @@
   "description": "simple file db for nodejs",
   "author": "becerraEnamneul",
   "name": "molly-proxy",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "main.js",
   "license": "MIT",
   "scripts": {
