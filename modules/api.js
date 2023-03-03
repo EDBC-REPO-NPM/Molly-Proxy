@@ -120,13 +120,16 @@ function sendStaticFile( req,res,url,status ){
         const mimetype = setMimetype( url );
 		const range = req.headers.range;
 
-		if( range ) {
-			const {start,end} = getInterval( range, chunkSize, size );
-			const headers = header.stream(mimetype,start,end,size);
-			const data = fs.createReadStream( url,{start,end} );
-			encoder( 206, data, req, res, headers ); return 0;
-		} else { 
+		if ( (/text|xml/i).test(mimetype) ){
 			res.writeHead( status, header.static(mimetype,true) );
+			const str = fs.createReadStream(url); str.pipe(res);
+		} else if( range ) {
+			const {start,end} = getInterval( range, chunkSize, size );
+			const headers = header.stream(globalConfig,mimetype,start,end,size);
+			const data = fs.createReadStream( url,{start,end} );
+			encoder( 206, data, req, res, header ); return 0;
+		} else { 
+			res.writeHead( status, header.static(globalConfig,mimetype,true) );
 			const str = fs.createReadStream(url); str.pipe(res);
 		}
 		
