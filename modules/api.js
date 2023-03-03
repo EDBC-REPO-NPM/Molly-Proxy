@@ -78,13 +78,13 @@ const mime = {
 function setMimetype( _path ){
 	if( !(/\.\w+$/).test(_path) ) return 'text/html';
 	const keys = Object.keys(mime)
-	for( let key of keys ){ if( _path.endsWith(key) ) 
+	for( let key of keys ){ if( _path.endsWith(key) )
 		return mime[key];
 	}	return 'text/plain';
 }
 
 function parseParameters( ...arg ){
-	const obj = { status: 200, cache: false }; 
+	const obj = { status: 200, cache: false };
 	for( var i in arg ){
 		switch( typeof arg[i] ){
 			case 'number': obj['status'] = arg[i]; break;
@@ -97,9 +97,9 @@ function parseParameters( ...arg ){
 
 function getInterval( range,chunkSize,size ){
 	const interval = range.match(/\d+/gi);
-	const start = Math.floor(+interval[0]/chunkSize)*chunkSize; 
-	const end = !interval[1] ? Math.min(chunkSize+start,size-1) : 
-				+interval[1]; 
+	const start = Math.floor(+interval[0]/chunkSize)*chunkSize;
+	const end = !interval[1] ? Math.min(chunkSize+start,size-1) :
+				+interval[1];
 	return { start, end };
 }
 
@@ -114,7 +114,7 @@ function parseData( data ){
 function sendStaticFile( req,res,url,status ){
 	try{
 
-		const chunkSize = +req.headers['chunk-size'] || 
+		const chunkSize = +req.headers['chunk-size'] ||
 						  Math.pow(10,6) * 10;
 		const size = fs.statSync( url ).size;
         const mimetype = setMimetype( url );
@@ -125,21 +125,21 @@ function sendStaticFile( req,res,url,status ){
 			const str = fs.createReadStream(url); str.pipe(res);
 		} else if( range ) {
 			const {start,end} = getInterval( range, chunkSize, size );
-			const headers = header.stream(globalConfig,mimetype,start,end,size);
+			const headers = header.stream(mimetype,start,end,size);
 			const data = fs.createReadStream( url,{start,end} );
 			encoder( 206, data, req, res, header ); return 0;
-		} else { 
-			res.writeHead( status, header.static(globalConfig,mimetype,true) );
+		} else {
+			res.writeHead( status, header.static(mimetype,true) );
 			const str = fs.createReadStream(url); str.pipe(res);
 		}
 		
-	} catch(e) { output.send(req,res,e,404); }
-} 
+	} catch(e) { console.log(e); output.send(req,res,e,404); }
+}
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────── //
 
 function sendStreamFile( req,res,url,status ){
-	try { 
+	try {
 
 		url.headers = !url.header ? req.headers : url.headers;
 		
@@ -160,9 +160,9 @@ function sendStreamFile( req,res,url,status ){
 		return fetch(url).then((rej)=>{
 			res.writeHeader( rej.status, rej.headers );
 			rej.data.pipe( res );
-		}).catch((rej)=>{ 
+		}).catch((rej)=>{
 			try {
-				if( url.headers.range && !(/text/i).test(url.headers['content-type']) ) 
+				if( url.headers.range && !(/text/i).test(url.headers['content-type']) )
 					rej.status = 100; res.writeHeader( rej.status, rej.headers );
 					rej.data.pipe( res );
 			} catch(e) {
@@ -193,9 +193,9 @@ output.sendFile = ( req,res,_path,...arg )=>{
 	else output.send( req, res, 'file not found', 404); return true;
 }
 
-output.redirect = ( req,res,_url )=>{ 
-	res.writeHead(301,{'location':_url}); 
-	res.end(); return true; 
+output.redirect = ( req,res,_url )=>{
+	res.writeHead(301,{'location':_url});
+	res.end(); return true;
 }
 
 module.exports = output;
