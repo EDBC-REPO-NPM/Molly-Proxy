@@ -37,9 +37,9 @@ function runProx( req,res,location ){
 module.exports = function(req,res,config,protocol){
     try { 
         
-        const host = req.headers['x-forwarded-host'] || 
-                     req.headers['host'];
-        req.protocol = protocol; 
+        const host = ( req.headers['host'] ||
+            req.headers['x-forwarded-host'])
+               .split(':').shift();
 
         if( !config.location ) return api.send( req,res,'Not Location List Found',404 );
 
@@ -49,11 +49,19 @@ module.exports = function(req,res,config,protocol){
                 if( d ) return d;
             }
 
-        else if( typeof config.location == 'object' )
-            for( let location of config.location[req.host] ){
+        else if( typeof config.location == 'object' ) {
+            
+            for( let location of config.location[''] ){
                 const d = runProx( req,res,location );
                 if( d ) return d;
             }
+            
+            for( let location of config.location[host] ){
+                const d = runProx( req,res,location );
+                if( d ) return d;
+            }
+
+        }
     
         return api.send( req,res,'something went wrong',404 );
 
