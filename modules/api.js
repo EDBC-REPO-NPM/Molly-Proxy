@@ -78,9 +78,8 @@ const mime = {
 function setMimetype( _path ){
 	if( !(/\.\w+$/).test(_path) ) return 'text/html';
 	const keys = Object.keys(mime)
-	for( let key of keys ){ if( _path.endsWith(key) )
-		return mime[key];
-	}	return 'text/plain';
+	for( let key of keys ) if( _path.endsWith(key) )
+		return mime[key]; return 'text/plain';
 }
 
 function parseParameters( ...arg ){
@@ -98,8 +97,9 @@ function parseParameters( ...arg ){
 function getInterval( range,chunkSize,size ){
 	const interval = range.match(/\d+/gi);
 	const start = Math.floor(+interval[0]/chunkSize)*chunkSize;
-	const end = !interval[1] ? Math.min(chunkSize+start,size-1) :
-				+interval[1];
+//	const end = !interval[1] ? Math.min(chunkSize+start,size-1) :
+//				+interval[1];
+	const end = Math.min(chunkSize+start,size-1);
 	return { start, end };
 }
 
@@ -133,7 +133,7 @@ function sendStaticFile( req,res,url,status ){
 			const str = fs.createReadStream(url); str.pipe(res);
 		}
 		
-	} catch(e) { console.log(e); output.send(req,res,e,404); }
+	} catch(e) { output.send(req,res,e,404); }
 }
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────── //
@@ -167,7 +167,7 @@ function sendStreamFile( req,res,url,status ){
 					rej.data.pipe( res );
 			} catch(e) {
 				res.writeHeader( 404, {'content-type':'text/plain'} );
-				res.end(e.message);
+				res.end(rej.message);
 			}
 		});
 
