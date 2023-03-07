@@ -49,6 +49,77 @@ Bz8hAoGAborx5CTvbnEjtBFKUAzpGc3tSd3ifBOHRVmhPIAXd1x6jAJKOmUHBFns
 F+fr+rWvc3zLl5K76saP4wzUWHHFX7XRfqwW4sJGWpq0D3W6b3k=
 -----END RSA PRIVATE KEY-----`;
 
-const path = require('path'); const fs = require('fs'); module.exports = ()=>{
-    const SSL = cert.split('|'); return { cert: SSL[0], key: SSL[1] };
+/*────────────────────────────────────────────────────────────────────────────────────────*/
+
+const output = new Object( );
+const path = require('path'); 
+const tls = require('tls');
+const fs = require('fs'); 
+
+/*────────────────────────────────────────────────────────────────────────────────────────*/
+
+function SNI( cert, name, cb ){
+
+    let ctx = undefined;
+
+    if( !cert.cert && !cert.key ){
+
+        if(!cert[name])
+            throw new Error(`Not found SSL certificate for host: ${name}`);
+            ctx = cert[name];
+
+    } else  ctx = cert;
+
+    if (cb)
+        cb(null, cert[name]);
+    else return cert[name];
+
 }
+
+function getSecureContexts(cert) {
+
+    const certToReturn = new Object();
+
+    if( !cert || Object.keys(cert).length === 0 ) {
+        return null
+
+    } else if( Object.keys(cert).length != 0 ) {
+
+        if( !cert?.cert && !cert?.key ){
+            for( const serverName of Object.keys(cert) ) {
+                certToReturn[serverName] = tls.createSecureContext({
+                    cert: fs.readFileSync(cert[serverName].cert),
+                    key: fs.readFileSync(cert[serverName].key),
+                });
+            }
+
+        } else {
+            return {
+                cert: fs.readFileSync(cert.cert),
+                key: fs.readFileSync(cert.key),
+            };
+        }
+
+    }
+
+    certToReturn.SNICallback((name,cb)=>SNI(cert,name,cb));
+    return certToReturn;
+}
+
+/*────────────────────────────────────────────────────────────────────────────────────────*/
+
+
+output.default = ()=>{
+    const SSL = cert.split('|'); 
+    return {
+        cert: SSL[0], key: SSL[1],
+    };
+}
+
+output.parse = (key)=>{
+    return getSecureContexts(key);
+}
+
+/*────────────────────────────────────────────────────────────────────────────────────────*/
+
+module.exports = output;

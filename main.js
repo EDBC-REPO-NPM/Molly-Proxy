@@ -7,7 +7,7 @@ const net = require('net');
 const fs = require('fs');
 
 const app = require('./modules/app');
-const key = require('./modules/ssl');
+const ssl = require('./modules/ssl');
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────── //
 
@@ -66,10 +66,10 @@ output.createHTTPSServer = function( ...arg ){
   const cfg = typeof arg[0] == 'object' ? arg[0] :
               typeof arg[1] == 'object' ? arg[1] : null;
 
+  const key = ssl.parse(cfg.key) || ssl.default();
   const host = cfg.host || '0.0.0.0';
-  const port = cfg.port || HTTPS;
+  const port = cfg.port || HTTP2; 
   const th = cfg.thread || 1;
-  const key = cfg.key || ssl;
 
   if (cluster.isPrimary) {
 
@@ -98,12 +98,12 @@ output.createHTTP2Server = function( ...arg ){
   const cfg = typeof arg[0] == 'object' ? arg[0] :
               typeof arg[1] == 'object' ? arg[1] : null;
 
+  const key = ssl.parse(cfg.key) || ssl.default();
   const host = cfg.host || '0.0.0.0';
   const port = cfg.port || HTTP2; 
   const th = cfg.thread || 1;
-  const key = cfg.key || ssl;
   
-  key.allowHTTP1 = !key.allowHTTP1 ? cfg.allowHTTP1 : key.allowHTTP1
+  key.allowHTTP1 = cfg.allowHTTP1 || false;
 
   if (cluster.isPrimary) {
 
