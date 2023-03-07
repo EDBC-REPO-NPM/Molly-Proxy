@@ -11,7 +11,7 @@ const ssl = require('./modules/ssl');
 
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────── //
 
-const output = new Object(); const ssl = key();
+const output = new Object();
 const HTTP = process.env.HTTP || process.env.PORT || 8080;
 const HTTPS = process.env.HTTPS || process.env.PORT || 8443;
 const HTTP2 = process.env.HTTP2 || process.env.PORT || 8443;
@@ -66,10 +66,10 @@ output.createHTTPSServer = function( ...arg ){
   const cfg = typeof arg[0] == 'object' ? arg[0] :
               typeof arg[1] == 'object' ? arg[1] : null;
 
-  const key = ssl.parse(cfg.key) || ssl.default();
   const host = cfg.host || '0.0.0.0';
+  const key  = ssl.default(cfg.key);
   const port = cfg.port || HTTP2; 
-  const th = cfg.thread || 1;
+  const th   = cfg.thread || 1;
 
   if (cluster.isPrimary) {
 
@@ -82,7 +82,7 @@ output.createHTTPSServer = function( ...arg ){
     const server = https.createServer( key,(req,res)=>{ app(req,res,cfg,'HTTPS') } );
       server.listen( port,host,()=>{ console.log(JSON.stringify({
         name: 'molly-proxy', protocol: 'HTTPS', port: port, host: host 
-      })); if( clb ) clb(server);
+      })); if( clb ) clb(server); ssl.parse( server, cfg.key );
     }).setTimeout( cfg.timeout );
   }
 
@@ -98,12 +98,10 @@ output.createHTTP2Server = function( ...arg ){
   const cfg = typeof arg[0] == 'object' ? arg[0] :
               typeof arg[1] == 'object' ? arg[1] : null;
 
-  const key = ssl.parse(cfg.key) || ssl.default();
   const host = cfg.host || '0.0.0.0';
+  const key  = ssl.default(cfg.key);
   const port = cfg.port || HTTP2; 
-  const th = cfg.thread || 1;
-  
-  key.allowHTTP1 = cfg.allowHTTP1 || false;
+  const th   = cfg.thread || 1;
 
   if (cluster.isPrimary) {
 
@@ -116,8 +114,8 @@ output.createHTTP2Server = function( ...arg ){
     const server = http2.createSecureServer( key,(req,res)=>{ app(req,res,cfg,'HTTP2') } );
       server.listen( port,host,()=>{ console.log(JSON.stringify({
         name: 'molly-proxy', protocol: 'HTTP2', port: port, host: host 
-      })); if( clb ) clb(server);
-    }).setTimeout( cfg.timeout );
+      })); if( clb ) clb(server); ssl.parse( server, cfg.key );
+    }).setTimeout( cfg.timeout ); 
   }
 
 }
