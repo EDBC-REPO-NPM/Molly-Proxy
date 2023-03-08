@@ -12,7 +12,7 @@ const ssl = require('./modules/ssl');
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────────── //
 
 const output = new Object();
-const HTTP = process.env.HTTP || process.env.PORT || 8080;
+const HTTP  = process.env.HTTP  || process.env.PORT || 8080;
 const HTTPS = process.env.HTTPS || process.env.PORT || 8443;
 const HTTP2 = process.env.HTTP2 || process.env.PORT || 8443;
 
@@ -48,10 +48,11 @@ output.createHTTPServer = function( ...arg ){
     
   } else {
     const server = http.createServer( (req,res)=>{ app(req,res,cfg,'HTTP') } );
-      server.listen( port,host,()=>{ console.log(JSON.stringify({
+    server.listen( port,host,()=>{ 
+      server.timeout = cfg.timeout || (1000*60); console.log(JSON.stringify({
         name: 'molly-proxy', protocol: 'HTTP', port: port, host: host 
       })); if(clb) clb(server);
-    }).setTimeout( cfg.timeout );
+    })
   }
 
 }
@@ -80,10 +81,11 @@ output.createHTTPSServer = function( ...arg ){
 
   } else {
     const server = https.createServer( key,(req,res)=>{ app(req,res,cfg,'HTTPS') } );
-      server.listen( port,host,()=>{ console.log(JSON.stringify({
+    server.listen( port,host,()=>{ 
+      server.timeout = cfg.timeout || (1000*60); console.log(JSON.stringify({
         name: 'molly-proxy', protocol: 'HTTPS', port: port, host: host 
       })); if( clb ) clb(server); ssl.parse( server, cfg.key );
-    }).setTimeout( cfg.timeout );
+    });
   }
 
 }
@@ -112,10 +114,11 @@ output.createHTTP2Server = function( ...arg ){
 
   } else {
     const server = http2.createSecureServer( key,(req,res)=>{ app(req,res,cfg,'HTTP2') } );
-      server.listen( port,host,()=>{ console.log(JSON.stringify({
+    server.listen( port,host,()=>{ 
+      server.timeout = cfg.timeout || (1000*60); console.log(JSON.stringify({
         name: 'molly-proxy', protocol: 'HTTP2', port: port, host: host 
       })); if( clb ) clb(server); ssl.parse( server, cfg.key );
-    }).setTimeout( cfg.timeout ); 
+    }); 
   }
 
 }
