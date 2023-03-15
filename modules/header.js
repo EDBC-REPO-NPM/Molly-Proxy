@@ -13,8 +13,6 @@ output.header = ( headers,cache,size )=>{
 
 	if( cache ) 
 		headers["cache-control"] = `public, max-age=${expirationAge()}`;
-		headers["set-cookie"] = 'cross-site-cookie=whatever; SameSite=None; Secure';
-
 	if( size!=0 ) headers["content-length"] = size;
 		headers["powered-by"] = "molly-proxy";
 		headers["x-xss-protection"] = 0;

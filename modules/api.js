@@ -190,7 +190,7 @@ output.sendFile = ( req,res,_path,...arg )=>{
 	if((/^http/i).test(_path)) _path = { url:_path };
 	if(typeof _path === 'object') sendStreamFile( req,res,_path,v.status );
 	else if(fs.existsSync(_path)) sendStaticFile( req,res,_path,v.status );
-	else output.send( req, res, 'file not found', 404); return true;
+	else output.send( req, res, 'file not found', 404 ); return true;
 }
 
 output.redirect = ( req,res,_url )=>{
