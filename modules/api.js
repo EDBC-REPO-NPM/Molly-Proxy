@@ -77,10 +77,10 @@ const mime = {
 // ────────────────────────────────────────────────────────────────────────────────────────────────────────────── //
 
 function setMimetype( _path ){
+	const keys = Object.keys(mime), type = _path.match(/\.\w+$/)[0].slice(1);
 	if( !(/\.\w+$/).test(_path) ) return 'text/html';
-	const keys = Object.keys(mime)
 	for( let key of keys ) if( _path.endsWith(key) )
-		return mime[key]; return 'text/plain';
+		return mime[key]; return `application/${type}`;
 }
 
 function parseParameters( ...arg ){
