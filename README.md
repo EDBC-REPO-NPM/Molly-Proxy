@@ -65,10 +65,6 @@ proxy.createHTTPSServer({
 });
 ```
 
-In this example, the reverse proxy will run on the default HTTP and HTTPS ports (80 and 443, respectively) and will target two destination servers running on ports 3000 and 3001 on the same machine.
-
-The reverse proxy will run on the specified HTTP and HTTPS ports and redirect traffic to the specified destination servers.
-
 ## Configuration
 
 There are 3 basic rules in MOLLY-PROXY:
