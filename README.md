@@ -34,7 +34,7 @@ proxy.createHTTPServer({
 ```
 
 HTTPS Server Proxy
-```
+```javascript
 const key = { //here we place the ssl
     'page1.xyz': {
         cert: '/root/cert/page1/fullchain.pem',
